@@ -1,4 +1,3 @@
-var sys  = require('sys');
 
 function TestRunner() {
   this.suites = [];
@@ -16,7 +15,7 @@ TestRunner.prototype.add = function(test_suite) {
 
 TestRunner.prototype.run = function(complete_event) {
   this.complete_event = complete_event;
-
+  
   if (this.suites.length > 0) {
     this.current_suite_count = 0;
     this.current_suite = this.suites[this.current_suite_count];

@@ -23,8 +23,8 @@ WasRun.prototype.set_up = function() {
   }
 }
 
-WasRun.prototype.test_method = function() {
-  this.log += 'test_method ';
+WasRun.prototype.testMethod = function() {
+  this.log += 'testMethod ';
 }
 
 WasRun.prototype.tear_down = function() {
@@ -38,7 +38,7 @@ WasRun.prototype.tear_down = function() {
   }
 }
 
-WasRun.prototype.test_broken_method = function() {
+WasRun.prototype.testBrokenMethod = function() {
   throw new Error("test exception");
 }
 
@@ -48,7 +48,7 @@ WasRun.prototype.test_async_broken_method = function() {
   });
 }
 
-WasRun.prototype.test_settimeout_broken_method = function() {
+WasRun.prototype.testSettimeoutBrokenMethod = function() {
   // 두번째 방법: set_timeout 함수를 이용하여 비동기 함수 호출
   // set_timout 함수는 내부에서 자동으로 시간을 계산해서 timeout 처리후
   // 다음 테스트 케이스로 넘어간다.
@@ -86,20 +86,20 @@ WasRun.prototype.test_settimeout_broken_method = function() {
   that.waits(10);
 }
 
-WasRun.prototype.test_broken_set_up = function() {
-  this.log += 'test_broken_set_up ';
+WasRun.prototype.testBrokenSetup = function() {
+  this.log += 'testBrokenSetup ';
 }
 
-WasRun.prototype.test_async_broken_set_up = function() {
-  this.log += 'test_async_broken_set_up ';
+WasRun.prototype.testAsyncBrokenSetUp = function() {
+  this.log += 'testAsyncBrokenSetUp ';
 }
 
-WasRun.prototype.test_broken_tear_down = function() {
-  this.log += 'test_broken_tear_down ';
+WasRun.prototype.testBrokenTearDown = function() {
+  this.log += 'testBrokenTearDown ';
 }
 
-WasRun.prototype.test_async_broken_tear_down = function() {
-  this.log += 'test_async_broken_tear_down ';
+WasRun.prototype.testAsyncBrokenTearDown = function() {
+  this.log += 'testAsyncBrokenTearDown ';
 }
 
 WasRun.prototype.log = function() {
@@ -112,9 +112,9 @@ WasRun.prototype.raise_excption_when_set_up = function(enable) {
 
 WasRun.create_suite = function() {
   var suite = new TestSuite('WasRun');
-  suite.add(new WasRun('test_method'));
-  suite.add(new WasRun('test_broken_method'));
-  suite.add(new WasRun('test_broken_set_up'));
+  suite.add(new WasRun('testMethod'));
+  suite.add(new WasRun('testBrokenMethod'));
+  suite.add(new WasRun('testBrokenSetup'));
   return suite;
 }
 

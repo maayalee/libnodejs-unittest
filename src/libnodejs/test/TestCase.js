@@ -15,38 +15,38 @@ function TestCase(methodName) {
   var that = this;
   this.exceptionHandler = function(error) {
     // interval 함수내에서 예외가 발생하게 되면 자동으로 clearInterval 될 수 있으므로
-    // updateHandler를 다시 등록하여 tear_down에서 발생하는 타이머 호출 함수를
+    // updateHandler를 다시 등록하여 tearDown에서 발생하는 타이머 호출 함수를
     // 갱신하기 위해 재등록해준다.
     clearInterval(that.updateHandler);
     that.updateIntervalID = setInterval(that.updateHandler, 1);
-    that._clear_timers();
-    that._add_failed_count(error);
-    that._start_tear_down();
+    that._clearTimers();
+    that._addFailedCount(error);
+    that._start_tearDown();
   }; 
 
   this.updateHandler = function() {
 	var date = new Date();
-    var timer = that._get_current_timer();
-    if (timer.type == 'waits_for') {
+    var timer = that._getCurrentTimer();
+    if (timer.type == 'waitsFor') {
       // wait 시간이 정해진 TIMEOUT시간을 넘어서면 에러
       if (date.getTime() >= timer.timeout) {
         // exceptionHandler가 호출되게 된다.
-        throw new Error('waits_for handler is  timeout => ' + timer.pass);
+        throw new Error('waitsFor handler is  timeout => ' + timer.pass);
       }
       // 넘겨 받은 함수가 true를 리턴하면 대기 해제
       if (timer.pass())
-        that._remove_timer(timer.id);
+        that._removeTimer(timer.id);
     }
     else if (timer.type == 'waits') {
       // wait 시간이 넘어서면 대기 해제
       if (date.getTime() >= timer.timeout) {
-        that._remove_timer(timer.id);
+        that._removeTimer(timer.id);
       }
     }
     else if (timer.type == 'runs') {
       if (date.getTime() >= timer.timeout) {
         timer.handler();
-        that._remove_timer(timer.id);
+        that._removeTimer(timer.id);
       }
     }
   }
@@ -54,14 +54,14 @@ function TestCase(methodName) {
 
 TestCase.WAIT_FOR_DEFAULT_TIMEOUT = 5000;
 
-TestCase.prototype._get_current_timer = function() {
+TestCase.prototype._getCurrentTimer = function() {
   if (this.timers.length == 0) {
     return {'type':'' };
   }
   return this.timers[0];
 }
 
-TestCase.prototype._remove_timer = function(id) {
+TestCase.prototype._removeTimer = function(id) {
   for (var i = 0; i < this.timers.length; i++) {
     if (this.timers[i].id == id) {
       this.timers.splice(i, 1);
@@ -70,10 +70,10 @@ TestCase.prototype._remove_timer = function(id) {
   }
 }
 
-TestCase.prototype.set_up = function() {
+TestCase.prototype.setUp = function() {
 }
 
-TestCase.prototype.tear_down = function() {
+TestCase.prototype.tearDown = function() {
 }
 
 /**
@@ -94,15 +94,15 @@ TestCase.prototype.runs = function(callback, timeoutMicroSeconds) {
  * @callback Function 실행 대기 여부를 검사하는 콜백 함수. 이 함수가 true를 리턴하면 다음 테스트 콜백 함수를 실행한다.
  * @timeoutMicroSeconds int 실행 대기 타임 아웃 시간. 밀리세컨드 단위
  */
-TestCase.prototype.waits_for = function(callback, timeoutMicroSeconds) {
+TestCase.prototype.waitsFor = function(callback, timeoutMicroSeconds) {
   if (undefined == timeoutMicroSeconds)
     timeoutMicroSeconds = TestCase.WAIT_FOR_DEFAULT_TIMEOUT;
-  this._add_waits_for(callback, timeoutMicroSeconds);
+  this._add_waitsFor(callback, timeoutMicroSeconds);
 }
 
 
 /**
- * 비동기 테스트 콜백 함수 실행을 대기. waits_for 처럼 특정 조건이 아닌 정해진 시간동안만 무조건 대기하는 함수
+ * 비동기 테스트 콜백 함수 실행을 대기. waitsFor 처럼 특정 조건이 아닌 정해진 시간동안만 무조건 대기하는 함수
  *
  * @param micro_seconds int 대기시간
  */
@@ -120,9 +120,9 @@ TestCase.prototype._add_runs = function(callback, wait_micro_seconds) {
     }
     catch (error) {
       //console.log('catch error!:' + error.stack);
-      that._clear_timers();
-      that._add_failed_count(error);
-      that._start_tear_down();
+      that._clearTimers();
+      that._addFailedCount(error);
+      that._start_tearDown();
     }
   };
   this.timers.push({
@@ -133,13 +133,13 @@ TestCase.prototype._add_runs = function(callback, wait_micro_seconds) {
   });
 };
 
-TestCase.prototype._add_waits_for = function(callback, timeoutMicroSeconds) {
+TestCase.prototype._add_waitsFor = function(callback, timeoutMicroSeconds) {
   this.timerID++;
   var that = this;
   var id = that.timerID; 
   this.timers.push({
     'id':this.timerID, 
-    'type':'waits_for',
+    'type':'waitsFor',
     'pass':callback,
     'handler': function() {},
     'timeout': new Date().getTime() + timeoutMicroSeconds
@@ -170,9 +170,9 @@ TestCase.prototype.run = function(test_result, runCompleteEvent) {
     this._start_set_up();
   }
   catch (error) {
-    this._clear_timers();
-    this._add_failed_count(error);
-    this._start_tear_down();
+    this._clearTimers();
+    this._addFailedCount(error);
+    this._start_tearDown();
   }
 }
 
@@ -195,26 +195,26 @@ TestCase.prototype._start_run = function () {
     this.step_interval_id = setInterval(function() { 
       if (that.timers.length == 0) {
         clearInterval(that.step_interval_id);
-        that._start_tear_down();
+        that._start_tearDown();
       }
     }, 1);
   }
   catch (error) {
-    this._clear_timers();
-    this._add_failed_count(error);
-    this._start_tear_down();
+    this._clearTimers();
+    this._addFailedCount(error);
+    this._start_tearDown();
   }
 }
 
-TestCase.prototype._start_tear_down = function() {
+TestCase.prototype._start_tearDown = function() {
   try {
-    // tear down 처리 시작. tear_down중 예외는 잡아서 처리해야지 계속 _start_tear_down호출
+    // tear down 처리 시작. tearDown중 예외는 잡아서 처리해야지 계속 _start_tearDown호출
     // 되는 것을 막을 수 있다.
-    this.tear_down();
+    this.tearDown();
   }
   catch (error) {
-    this._clear_timers();
-    this._add_failed_count(error); 
+    this._clearTimers();
+    this._addFailedCount(error); 
   } 
 
   // 테스트케이스 완료 처리 시작
@@ -229,7 +229,7 @@ TestCase.prototype._start_tear_down = function() {
           that.runCompleteEvent();
         }
         catch (error){
-          console.error('TESTS', 'TestCase::_start_tear_down::complete event is failed:' + error.stack);
+          console.error('TESTS', 'TestCase::_start_tearDown::complete event is failed:' + error.stack);
         }
       } 
       process.removeListener('uncaughtException', that.exceptionHandler);
@@ -245,23 +245,23 @@ TestCase.prototype.assert = function(statement, message) {
   }
 }
 
-TestCase.prototype._add_failed_count = function(error) {
+TestCase.prototype._addFailedCount = function(error) {
   var message = util.format('%s \n%s', error.message, error.stack);
   this.test_result.test_failed(this.methodName, message);
 }
 
-TestCase.prototype._clear_timers = function() {
+TestCase.prototype._clearTimers = function() {
   clearInterval(this.step_interval_id);
   for (var i = 0; i < this.timers.length; i++) {
   }
   this.timers.length = 0;
 }
 
-TestCase.prototype.is_complete = function() {
+TestCase.prototype.isComplete = function() {
   return this.complete;
 }
 
-TestCase.prototype.print_timers = function(message) {
+TestCase.prototype.printTimers = function(message) {
   console.log(message);
   for (var i = 0; i < this.timers.length; i++) {
     console.log('idx:' + i + ',id:' + this.timers[i].id + ',type:' + this.timers[i].type);

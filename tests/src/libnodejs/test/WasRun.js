@@ -1,22 +1,22 @@
 var TestCase = require('../../../../src/libnodejs/test/TestCase');
 var TestSuite = require('../../../../src/libnodejs/test/TestSuite');
 
-function WasRun(method_name) {
-  TestCase.call(this, method_name);
+function WasRun(methodName) {
+  TestCase.call(this, methodName);
   this.log = '';
-  this.raise_excption_when_set_up = false;
-  this.raise_async_excption_when_set_up = false;
-  this.raise_excption_when_tear_down = false;
-  this.raise_async_excption_when_tear_down = false;
+  this.raisExceptionWhenSetUp = false;
+  this.raiseAsyncExceptionWhenSetUp = false;
+  this.raiseExceptionWhenTearDown = false;
+  this.raiseAsyncExceptionWhenTearDown = false;
 } 
 WasRun.prototype = new TestCase();
 WasRun.prototype.constructor = WasRun;
 
-WasRun.prototype.set_up = function() {
-  this.log += 'set_up ';
-  if (this.raise_excption_when_set_up)
+WasRun.prototype.setUp = function() {
+  this.log += 'setUp ';
+  if (this.raisExceptionWhenSetUp)
     throw new Error("test exception");
-  if (this.raise_async_excption_when_set_up) {
+  if (this.raiseAsyncExceptionWhenSetUp) {
     this.set_timeout(function() {
       throw new Error('test async exception');
     }, 1);
@@ -29,9 +29,9 @@ WasRun.prototype.testMethod = function() {
 
 WasRun.prototype.tear_down = function() {
   this.log += 'tear_down';
-  if (this.raise_excption_when_tear_down)
+  if (this.raiseExceptionWhenTearDown)
     throw new Error('test exception');
-  if (this.raise_async_excption_when_tear_down) {
+  if (this.raiseAsyncExceptionWhenTearDown) {
     this.set_timeout(function() {
       throw new Error('test async exception');
     }, 1);
@@ -106,8 +106,8 @@ WasRun.prototype.log = function() {
   return this.log;
 }
 
-WasRun.prototype.raise_excption_when_set_up = function(enable) {
-  this.raise_excption_when_set_up = enable;
+WasRun.prototype.raisExceptionWhenSetUp = function(enable) {
+  this.raisExceptionWhenSetUp = enable;
 }
 
 WasRun.create_suite = function() {

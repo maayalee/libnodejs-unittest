@@ -1,47 +1,47 @@
 var util = require('util');
 
-function TestResult(suite_name) {
-  this.suite_name = suite_name;
-  this.run_count = 0;
-  this.fail_count = 0;
-  this.fail_methods = [];
+function TestResult(suiteName) {
+  this.suiteName = suiteName;
+  this.runCount = 0;
+  this.failCount = 0;
+  this.failMethods = [];
 }
 
 TestResult.prototype.test_started = function() {
-  this.run_count++;
-}
+  this.runCount++;
+};
 
 TestResult.prototype.test_failed = function(method_name, failed_message) {
-  this.fail_count++;
-  this.fail_methods.push({'name':method_name, 'message':failed_message});
-}
+  this.failCount++;
+  this.failMethods.push({'name':method_name, 'message':failed_message});
+};
 
 TestResult.prototype.summary = function() {
-  return this.suite_name + ': ' + this.run_count + ' run ' + this.fail_count + ' failed' + '\n' +
-          this.get_failed_messages();
-}
+  return this.suiteName + ': ' + this.runCount + ' run ' + this.failCount + ' failed' + '\n' +
+          this.getFailedMessages();
+};
 
-TestResult.prototype.short_summary = function() {
-  return this.suite_name + ': ' + this.run_count + ' run ' + this.fail_count + ' failed' + '\n' +
-          this.get_short_failed_methods();
-}
+TestResult.prototype.shortSummary = function() {
+  return this.suiteName + ': ' + this.runCount + ' run ' + this.failCount + ' failed' + '\n' +
+          this.getShortFailedMethods();
+};
 
-TestResult.prototype.get_failed_messages = function() {
+TestResult.prototype.getFailedMessages = function() {
   var result = '';
-  this.fail_methods.forEach(function(value) {
+  this.failMethods.forEach(function(value) {
     var message = util.format('> Method: %s\n%s\n', value.name, value.message);
     result += message;
   });
   return result;
-}
+};
 
-TestResult.prototype.get_short_failed_methods = function() {
+TestResult.prototype.getShortFailedMethods = function() {
   var result = '';
-  this.fail_methods.forEach(function(value) {
+  this.failMethods.forEach(function(value) {
     var message = util.format('%s\n', value.name);
     result += message;
   });
   return result;
-}
+};
 
 module.exports = TestResult;

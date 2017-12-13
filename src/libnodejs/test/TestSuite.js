@@ -1,64 +1,65 @@
 var TestResult = require('./TestResult');
 
-function TestSuite(suite_name) {
-  this.suite_name = suite_name;
+function TestSuite(suiteName) {
+  this.suiteName = suiteName;
   this.log = '';
-  this.test_cases = [];
-  this.test_result = null;
-  this.current_test_case_count = 0;
-  this.current_test_case = null;
+  this.testCases = [];
+  this.testResult = null;
+  this.currentTestCaseCount = 0;
+  this.currentTestCase = null;
   this.interval = null;
 }
 
 TestSuite.prototype.add = function(test_case) {
-  this.test_cases.push(test_case);
-}
+  this.testCases.push(test_case);
+};
 
 TestSuite.prototype.run = function() {
-  this.test_result = new TestResult(this.suite_name);
+  this.testResult = new TestResult(this.suiteName);
 
-  if (this.test_cases.length > 0) {
-    this.current_test_case_count = 0;
-    this.current_test_case = this.test_cases[this.current_test_case_count];
-    this.current_test_case.run(this.test_result);
+  if (this.testCases.length > 0) {
+    this.currentTestCaseCount = 0;
+    this.currentTestCase = this.testCases[this.currentTestCaseCount];
+    this.currentTestCase.run(this.testResult);
     var that = this;
     this.interval = setInterval(function() {
       that._update();
     }, 1);
   }
-}
+};
 
 TestSuite.prototype._update = function() {
-  if (this.current_test_case.is_complete()) {
-    this.current_test_case_count++;
-    if (this.current_test_case_count == this.test_cases.length) {
+  if (this.currentTestCase.isComplete()) {
+    this.currentTestCaseCount++;
+    if (this.currentTestCaseCount === this.testCases.length) {
       clearInterval(this.interval);
     }
     else {
-      this.current_test_case = this.test_cases[this.current_test_case_count];
-      this.current_test_case.run(this.test_result);
+      this.currentTestCase = this.testCases[this.currentTestCaseCount];
+      this.currentTestCase.run(this.testResult);
     }
   }
-}
+};
 
-TestSuite.prototype.is_complete = function() {
-  for (var i = 0; i < this.test_cases.length; i++) {
-    if (!this.test_cases[i].is_complete())
+TestSuite.prototype.isComplete = function() {
+  for (var i = 0; i < this.testCases.length; i++) {
+    if (!this.testCases[i].isComplete()) {
       return false;
+    }
   }
   return true;
-}
+};
 
 TestSuite.prototype.summary= function() {
-  return this.test_result.summary();
-}
+  return this.testResult.summary();
+};
 
-TestSuite.prototype.short_summary= function() {
-  return this.test_result.short_summary();
-}
+TestSuite.prototype.shortSummary= function() {
+  return this.testResult.shortSummary();
+};
 
 TestSuite.prototype.log = function() {
   return this.log;
-}
+};
 
 module.exports = TestSuite;

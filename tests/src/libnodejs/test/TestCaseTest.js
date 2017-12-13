@@ -13,104 +13,124 @@ TestCaseTest.prototype = new TestCase();
 TestCaseTest.constructor = TestCaseTest;
 
 TestCaseTest.prototype.testMethod = function() {
-  var was_run = new WasRun('testMethod');
-  was_run.run(this.wasRunTestResult, function() {
-    assert(was_run.log == 'set_up testMethod tear_down');
+  var wasRun = new WasRun('testMethod');
+  wasRun.run(this.wasRunTestResult);
+  this.waitsFor(function() {
+    return wasRun.isComplete();
   });
-}
+  this.runs(function() {
+    assert(wasRun.log === 'setUp testMethod tearDown ');
+  });
+};
 
 TestCaseTest.prototype.testBrokenMethod = function() {
-  var was_run = new WasRun('testBrokenMethod');
+  var wasRun = new WasRun('testBrokenMethod');
   var that = this;
-  was_run.run(this.wasRunTestResult, function() {
-    assert(that.wasRunTestResult.short_summary() == 'WasRun: 1 run 1 failed\ntestBrokenMethod\n');
+  wasRun.run(this.wasRunTestResult);
+  this.waitsFor(function() {
+    return wasRun.isComplete();
   });
-}
+  this.runs(function() {
+    assert(that.wasRunTestResult.shortSummary() === 'WasRun: 1 run 1 failed\ntestBrokenMethod\n');
+  });
+};
 
 TestCaseTest.prototype.testAsyncBrokenMethod = function() {
-  var was_run = new WasRun('testAsyncBrokenMethod');
+  var wasRun = new WasRun('testAsyncBrokenMethod');
   var that = this;
-  was_run.run(this.wasRunTestResult, function() {
-    assert(that.wasRunTestResult.short_summary() == 'WasRun: 1 run 1 failed\ntestAsyncBrokenMethod\n');
+  wasRun.run(this.wasRunTestResult);
+  this.waitsFor(function() {
+    return wasRun.isComplete();
   });
-}
+  this.runs(function() {
+    assert(wasRun.log === 'setUp testAsyncBrokenMethod exception tearDown ');
+    assert(that.wasRunTestResult.shortSummary() === 'WasRun: 1 run 1 failed\ntestAsyncBrokenMethod\n');
+  });
+};
 
-TestCaseTest.prototype.testBrokenSetup = function() {
-  var was_run = new WasRun('testBrokenSetup');
-  was_run.raise_excption_when_set_up = true;
-  var that = this;
-  was_run.run(this.wasRunTestResult, function() {
-    assert(was_run.log == 'set_up tear_down');
-    assert(that.wasRunTestResult.short_summary() == 'WasRun: 1 run 1 failed\ntestBrokenSetup\n');
+TestCaseTest.prototype.testBrokenSetUp = function() {
+  var wasRun = new WasRun('testBrokenSetUp');
+  wasRun.raiseExceptionWhenSetUp = true;
+  wasRun.run(this.wasRunTestResult);
+  this.waitsFor(function() {
+    return wasRun.isComplete();
   });
-}
+  var that = this;
+  this.runs(function() {
+    assert(wasRun.log === 'setUp tearDown ');
+    assert(that.wasRunTestResult.shortSummary() === 'WasRun: 1 run 1 failed\ntestBrokenSetUp\n');
+  });
+};
 
-TestCaseTest.prototype.testAsyncBrokenSetup = function() {
-  var was_run = new WasRun('testAsyncBrokenSetup');
-  was_run.raise_async_excption_when_set_up = true;
+TestCaseTest.prototype.testAsyncBrokenSetUp = function() {
+  var wasRun = new WasRun('testAsyncBrokenSetUp');
+  wasRun.raiseAsyncExceptionWhenSetUp = true;
   var that = this;
-  was_run.run(this.wasRunTestResult, function() {
-    assert(was_run.log == 'set_up tear_down');
-    assert(that.wasRunTestResult.short_summary() == 'WasRun: 1 run 1 failed\ntestAsyncBrokenSetup\n');
+  wasRun.run(this.wasRunTestResult);
+  this.waitsFor(function() {
+    return wasRun.isComplete();
   });
-}
+  this.runs(function() {
+    assert(wasRun.log === 'setUp tearDown ');
+    assert(that.wasRunTestResult.shortSummary() === 'WasRun: 1 run 1 failed\ntestAsyncBrokenSetUp\n');
+  });
+};
 
 TestCaseTest.prototype.testBrokenTearDown = function() {
-  var was_run = new WasRun('testBrokenTearDown');
-  was_run.raise_excption_when_tear_down = true;
+  var wasRun = new WasRun('testBrokenTearDown');
+  wasRun.raiseExceptionWhenTearDown = true;
   var that = this;
-  was_run.run(this.wasRunTestResult, function() {
-    assert(was_run.log == 'set_up testBrokenTearDown tear_down');
-    assert(that.wasRunTestResult.short_summary() == 'WasRun: 1 run 1 failed\ntestBrokenTearDown\n');
+  wasRun.run(this.wasRunTestResult, function() {
+    assert(wasRun.log === 'setUp testBrokenTearDown tearDown ');
+    assert(that.wasRunTestResult.shortSummary() === 'WasRun: 1 run 1 failed\ntestBrokenTearDown\n');
   });
-}
+};
 
 TestCaseTest.prototype.testAsyncBrokenTearDown = function() {
-  var was_run = new WasRun('testAsyncBrokenTearDown');
-  was_run.raise_excption_when_tear_down = true;
+  var wasRun = new WasRun('testAsyncBrokenTearDown');
+  wasRun.raiseExceptionWhenTearDown = true;
   var that = this;
-  was_run.run(this.wasRunTestResult, function() {
-    assert(was_run.log == 'set_up testAsyncBrokenTearDown tear_down');
-    assert(that.wasRunTestResult.short_summary() == 'WasRun: 1 run 1 failed\ntestAsyncBrokenTearDown\n');
+  wasRun.run(this.wasRunTestResult);
+  this.waitsFor(function() {
+    return wasRun.isComplete();
   });
-}
+  this.runs(function() {
+    assert(wasRun.log === 'setUp testAsyncBrokenTearDown tearDown ');
+    assert(that.wasRunTestResult.shortSummary() === 'WasRun: 1 run 1 failed\ntestAsyncBrokenTearDown\n');
+  });
+};
 
-TestCaseTest.prototype.testSettimeoutBrokenMethod = function() {
-  // WasRun 실행시에도 내부에서 예외 리스너를 등록한다. 비동기 함수에서 일어난
-  // 예외를 잡는 테스트를 위해 리스너를 제거한다.
-  // 제거하지 않으면 WasRun에서 일어난 예외로 인해 TestCaseTest도 예외가 발생해서
-  // 테스트가 실패한다.
+TestCaseTest.prototype.testTimeoutBrokenMethod = function() {
+  // Was_Run 실행시에도 내부에서 예외 리스너를 등록한다. 비동기 함수(SetTimeout)에서 일어난 예외를 잡는 테스트를 위해 리스너를 제거한다. 
+  // 제거하지 않으면 Was_Run에서 일어난 예외로 인해 Test_Case_Test도 예외가 발생해서 테스트가 실패한다.
   process.removeListener('uncaughtException', this.exceptionHandler);
 
-  var was_run = new WasRun('testSettimeoutBrokenMethod');
-  var was_run_complete = false;
+  var wasRun = new WasRun('testTimeoutBrokenMethod');
+  wasRun.run(this.wasRunTestResult);
+  this.waitsFor(function() {
+    return wasRun.isComplete();
+  });
   var that = this;
-  was_run.run(this.wasRunTestResult, function() {
-    was_run_complete = true;
-  });
-
-  this.waits_for(function() {
-    return was_run_complete;
-  });
-
+  // 
+  this.waits(200);
   this.runs(function() {
-    that.assert(was_run.log == 'set_up exception tear_down');
-    that.assert(that.wasRunTestResult.short_summary() == 'WasRun: 1 run 1 failed\ntestSettimeoutBrokenMethod\n');
-  });
-}
-
+    assert(wasRun.log === 'setUp testTimeoutBrokenMethod exception tearDown ');
+    assert(that.wasRunTestResult.shortSummary() === 'WasRun: 1 run 1 failed\ntestTimeoutBrokenMethod\n');
+    process.addListener('uncaughtException', that.exceptionHandler);
+  }, 100);
+};
 
 TestCaseTest.create_suite = function() {
   var suite = new TestSuite('TestCaseTest');
   suite.add(new TestCaseTest('testMethod'));
   suite.add(new TestCaseTest('testBrokenMethod'));
   suite.add(new TestCaseTest('testAsyncBrokenMethod'));
-  suite.add(new TestCaseTest('testBrokenSetup'));
-  suite.add(new TestCaseTest('testAsyncBrokenSetup'));
+  suite.add(new TestCaseTest('testTimeoutBrokenMethod'));
+  suite.add(new TestCaseTest('testBrokenSetUp'));
+  suite.add(new TestCaseTest('testAsyncBrokenSetUp'));
   suite.add(new TestCaseTest('testBrokenTearDown'));
   suite.add(new TestCaseTest('testAsyncBrokenTearDown'));
-  suite.add(new TestCaseTest('testSettimeoutBrokenMethod'));
   return suite;
-}
+};
 
 module.exports = TestCaseTest;

@@ -14,33 +14,35 @@ WasRun.prototype.constructor = WasRun;
 
 WasRun.prototype.setUp = function() {
   this.log += 'setUp ';
-  if (this.raiseExceptionWhenSetUp)
+  if (this.raiseExceptionWhenSetUp) {
     throw new Error("test exception");
+  }
   if (this.raiseAsyncExceptionWhenSetUp) {
     this.runs(function() {
       throw new Error('test async exception');
     });
   }
-}
+};
 
 WasRun.prototype.testMethod = function() {
   this.log += 'testMethod ';
-}
+};
 
 WasRun.prototype.tearDown = function() {
   this.log += 'tearDown ';
-  if (this.raiseExceptionWhenTearDown)
+  if (this.raiseExceptionWhenTearDown) {
     throw new Error('test exception');
+  }
   if (this.raiseAsyncExceptionWhenTearDown) {
     this.runs(function() {
       throw new Error('test async exception');
     });
   }
-}
+};
 
 WasRun.prototype.testBrokenMethod = function() {
   throw new Error("test exception");
-}
+};
 
 WasRun.prototype.testAsyncBrokenMethod = function() {
   this.log += 'testAsyncBrokenMethod ';
@@ -51,41 +53,32 @@ WasRun.prototype.testAsyncBrokenMethod = function() {
   });
 };
 
-WasRun.prototype.testTimeoutBrokenMethod = function() {
-  this.log += 'testTimeoutBrokenMethod ';
-  var that = this;
-  setTimeout(function() {
-    that.log += 'exception ';
-    throw new Error('test async exception');
-  }, 100);
-};
-
 WasRun.prototype.testBrokenSetUp = function() {
   this.log += 'testBrokenSetUp ';
 };
 
 WasRun.prototype.testAsyncBrokenSetUp = function() {
   this.log += 'testAsyncBrokenSetUp ';
-}
+};
 
 WasRun.prototype.testBrokenTearDown = function() {
   this.log += 'testBrokenTearDown ';
-}
+};
 
 WasRun.prototype.testAsyncBrokenTearDown = function() {
   this.log += 'testAsyncBrokenTearDown ';
-}
+};
 
 WasRun.prototype.log = function() {
   return this.log;
-}
+};
 
-WasRun.create_suite = function() {
+WasRun.createSuite = function() {
   var suite = new TestSuite('WasRun');
   suite.add(new WasRun('testMethod'));
   suite.add(new WasRun('testBrokenMethod'));
   suite.add(new WasRun('testBrokenSetUp'));
   return suite;
-}
+};
 
 module.exports = WasRun;

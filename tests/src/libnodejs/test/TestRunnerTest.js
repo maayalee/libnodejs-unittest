@@ -1,3 +1,4 @@
+/*jshint esnext: true */
 var assert = require('assert');
 var WasRun = require('./WasRun');
 var TestCase = require('../../../../src/libnodejs/test/TestCase');
@@ -12,17 +13,21 @@ TestRunnerTest.prototype = new TestCase();
 TestRunnerTest.constructor = TestRunnerTest;
 
 TestRunnerTest.prototype.test_run = function() {
-  var runner = new Test_Runner();
-  runner.add(Was_Run.create_suite());
-  runner.run(function() {
+  var runner = new TestRunner();
+  runner.add(WasRun.createSuite());
+  runner.run(()=>{});
+  this.waitsFor(function() {
+    return runner.isComplete();
   });
-  assert(runner.short_summary() == 'Was_Run: 3 run 1 failed\ntest_broken_method\n');
-}
+  this.runs(function() {
+    assert(runner.shortSummary() === 'WasRun: 3 run 1 failed\ntestBrokenMethod\n');
+  });
+};
 
-TestRunnerTest.create_suite = function() {
+TestRunnerTest.createSuite = function() {
   var suite = new TestSuite('TestRunnerTest');
   suite.add(new TestRunnerTest('test_run'));
   return suite;
-}
+};
 
 module.exports = TestRunnerTest;

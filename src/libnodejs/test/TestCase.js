@@ -1,6 +1,6 @@
+/*jshint esnext: true */
 var assert = require('assert');
 var util = require('util');
-var domain = require('domain');
 
 function TestCase(methodName) {
   this.methodName = methodName;
@@ -51,8 +51,6 @@ function TestCase(methodName) {
   };
 }
 
-TestCase.WAIT_FOR_DEFAULT_TIMEOUT = 1000;
-
 TestCase.prototype._getCurrentTimer = function() {
   if (this.timers.length === 0) {
     return {
@@ -80,40 +78,12 @@ TestCase.prototype.tearDown = function() {
 /**
  * 비동기 테스트 콜백함수를 추가한다.
  * 
- * @param callback Function 실행할 콜백 함수
- * @param wait_micro_seconds int 함수 대기시간. 밀리세켠드 단위
+ * @param callback
+ *          Function 실행할 콜백 함수
+ * @param waitMicroSeconds
+ *          int 함수 대기시간. 밀리세켠드 단위
  */
-TestCase.prototype.runs = function(callback, timeoutMicroSeconds = undefined) {
-  if (undefined === timeoutMicroSeconds) {
-    timeoutMicroSeconds = 0;
-  }
-  this._addRuns(callback, timeoutMicroSeconds);
-};
-
-/**
- * 비동기 테스트 콜백함수 실행을 대기시킨다.
- * 
- * @callback Function 실행 대기 여부를 검사하는 콜백 함수. 이 함수가 true를 리턴하면 다음 테스트 콜백 함수를 실행한다.
- * @timeoutMicroSeconds int 실행 대기 타임 아웃 시간. 밀리세컨드 단위
- */
-TestCase.prototype.waitsFor = function(callback, timeoutMicroSeconds = undefined) {
-  if (undefined === timeoutMicroSeconds) {
-    timeoutMicroSeconds = TestCase.WAIT_FOR_DEFAULT_TIMEOUT;
-  }
-  this._addWaitsFor(callback, timeoutMicroSeconds);
-};
-
-/**
- * 비동기 테스트 콜백 함수 실행을 대기. waitsFor 처럼 특정 조건이 아닌 정해진 시간동안만 무조건 대기하는 함수
- * 
- * @param micro_seconds
- *          int 대기시간
- */
-TestCase.prototype.waits = function(micro_seconds) {
-  this._addWaits(micro_seconds);
-};
-
-TestCase.prototype._addRuns = function(callback, wait_micro_seconds) {
+TestCase.prototype.runs = function(callback, waitMicroSeconds = 0) {
   this.timerID++;
   var that = this;
   var id = that.timerID;
@@ -131,11 +101,17 @@ TestCase.prototype._addRuns = function(callback, wait_micro_seconds) {
     'id' : this.timerID,
     'type' : 'runs',
     'handler' : handler,
-    'timeout' : new Date().getTime() + wait_micro_seconds
+    'timeout' : new Date().getTime() + waitMicroSeconds
   });
 };
 
-TestCase.prototype._addWaitsFor = function(callback, timeoutMicroSeconds) {
+/**
+ * 비동기 테스트 콜백함수 실행을 대기시킨다.
+ * 
+ * @callback Function 실행 대기 여부를 검사하는 콜백 함수. 이 함수가 true를 리턴하면 다음 테스트 콜백 함수를 실행한다.
+ * @waitMicroSeconds int 실행 대기 타임 아웃 시간. 밀리세컨드 단위
+ */
+TestCase.prototype.waitsFor = function(callback, timeoutMicroSeconds = 10000) {
   this.timerID++;
   var that = this;
   var id = that.timerID;
@@ -149,7 +125,13 @@ TestCase.prototype._addWaitsFor = function(callback, timeoutMicroSeconds) {
   });
 };
 
-TestCase.prototype._addWaits = function(timeoutMicroSeconds) {
+/**
+ * 비동기 테스트 콜백 함수 실행을 대기. waitsFor 처럼 특정 조건이 아닌 정해진 시간동안만 무조건 대기하는 함수
+ * 
+ * @param waitMicroSeconds
+ *          int 대기시간
+ */
+TestCase.prototype.waits = function(waitMicroSeconds) {
   this.timerID++;
   var that = this;
   var id = that.timerID;
@@ -158,7 +140,7 @@ TestCase.prototype._addWaits = function(timeoutMicroSeconds) {
     'type' : 'waits',
     'handler' : function() {
     },
-    'timeout' : new Date().getTime() + timeoutMicroSeconds
+    'timeout' : new Date().getTime() + waitMicroSeconds
   });
 };
 
@@ -210,8 +192,8 @@ TestCase.prototype._startRun = function() {
 
 TestCase.prototype._startTearDown = function() {
   try {
-    // tear down 처리 시작. tearDown중 예외는 잡아서 처리해야지 계속 _startTearDown호출
-    // 되는 것을 막을 수 있다.
+    // tear down 처리 시작. tearDown중 예외는 잡아서 처리해야지 계속 _startTearDown호출 되는 것을 막을 수
+    // 있다.
     this.tearDown();
   } catch (error) {
     this._clearTimers();
@@ -224,7 +206,7 @@ TestCase.prototype._startTearDown = function() {
       clearInterval(that.stepIntervalID);
       clearInterval(that.updateIntervalID);
       that.complete = true;
-      if (undefined != that.runCompleteEvent) {
+      if (undefined !== that.runCompleteEvent) {
         try {
           that.runCompleteEvent();
         } catch (error) {
@@ -236,15 +218,6 @@ TestCase.prototype._startTearDown = function() {
   }, 1);
 };
 
-TestCase.prototype.assert = function(statement, message) {
-  if (false == statement) {
-    if (undefined == message) {
-      message = 'statement is wrong';
-    }
-    throw new Error('Assert: ' + message);
-  }
-};
-
 TestCase.prototype._addFailedCount = function(error) {
   var message = util.format('%s \n%s', error.message, error.stack);
   this.testResult.test_failed(this.methodName, message);
@@ -252,8 +225,6 @@ TestCase.prototype._addFailedCount = function(error) {
 
 TestCase.prototype._clearTimers = function() {
   clearInterval(this.stepIntervalID);
-  for (var i = 0; i < this.timers.length; i++) {
-  }
   this.timers.length = 0;
 };
 
@@ -264,8 +235,7 @@ TestCase.prototype.isComplete = function() {
 TestCase.prototype.printTimers = function(message) {
   console.log(message);
   for (var i = 0; i < this.timers.length; i++) {
-    console.log('idx:' + i + ',id:' + this.timers[i].id + ',type:'
-        + this.timers[i].type);
+    console.log('idx:' + i + ',id:' + this.timers[i].id + ',type:' + this.timers[i].type);
   }
 };
 

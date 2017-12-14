@@ -100,32 +100,12 @@ TestCaseTest.prototype.testAsyncBrokenTearDown = function() {
   });
 };
 
-TestCaseTest.prototype.testTimeoutBrokenMethod = function() {
-  // Was_Run 실행시에도 내부에서 예외 리스너를 등록한다. 비동기 함수(SetTimeout)에서 일어난 예외를 잡는 테스트를 위해 리스너를 제거한다. 
-  // 제거하지 않으면 Was_Run에서 일어난 예외로 인해 Test_Case_Test도 예외가 발생해서 테스트가 실패한다.
-  process.removeListener('uncaughtException', this.exceptionHandler);
 
-  var wasRun = new WasRun('testTimeoutBrokenMethod');
-  wasRun.run(this.wasRunTestResult);
-  this.waitsFor(function() {
-    return wasRun.isComplete();
-  });
-  var that = this;
-  // 
-  this.waits(200);
-  this.runs(function() {
-    assert(wasRun.log === 'setUp testTimeoutBrokenMethod exception tearDown ');
-    assert(that.wasRunTestResult.shortSummary() === 'WasRun: 1 run 1 failed\ntestTimeoutBrokenMethod\n');
-    process.addListener('uncaughtException', that.exceptionHandler);
-  }, 100);
-};
-
-TestCaseTest.create_suite = function() {
+TestCaseTest.createSuite = function() {
   var suite = new TestSuite('TestCaseTest');
   suite.add(new TestCaseTest('testMethod'));
   suite.add(new TestCaseTest('testBrokenMethod'));
   suite.add(new TestCaseTest('testAsyncBrokenMethod'));
-  suite.add(new TestCaseTest('testTimeoutBrokenMethod'));
   suite.add(new TestCaseTest('testBrokenSetUp'));
   suite.add(new TestCaseTest('testAsyncBrokenSetUp'));
   suite.add(new TestCaseTest('testBrokenTearDown'));

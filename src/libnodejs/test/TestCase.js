@@ -1,74 +1,44 @@
 /*jshint esnext: true */
 var assert = require('assert');
 var util = require('util');
+var Runs = require('./Runs');
+var Waits = require('./Waits');
 
 class TestCase {
   constructor(methodName) {
     this.methodName = methodName;
     this.complete = false;
-    this.timerID = 0;
-    this.timers = [];
-    this.stepIntervalID = null;
-    this.updateIntervalID = null;
+    this.tasks = [];
     this.runCompleteEvent = null;
     this.testResult = null;
 
     var that = this;
     this.exceptionHandler = function(error) {
       console.log("TestCase::UnitTest Exception :" + error);
-      // interval 함수내에서 예외가 발생하게 되면 자동으로 clearInterval 될 수 있으므로
-      // updateHandler를 다시 등록하여 tearDown에서 발생하는 타이머 호출 함수를 갱신하기 위해 재등록해준다.
-      clearInterval(that.updateHandler);
-      that.updateIntervalID = setInterval(that.updateHandler, 1);
-      that._clearTimers();
       that._addFailedCount(error);
-      that._startTearDown();
-    };
-
-    this.updateHandler = function() {
-      var date = new Date();
-      var timer = that._getCurrentTimer();
-      if (timer.type === 'waitsFor') {
-        // wait 시간이 정해진 TIMEOUT시간을 넘어서면 에러
-        if (date.getTime() >= timer.timeout) {
-          // exceptionHandler가 호출되게 된다.
-          throw new Error('waitsFor handler is  timeout => timer pass is ' + timer.pass());
-        }
-        // 넘겨 받은 함수가 true를 리턴하면 대기 해제
-        if (timer.pass()) {
-          that._removeTimer(timer.id);
-        }
-      } else if (timer.type === 'waits') {
-        // wait 시간이 넘어서면 대기 해제
-        if (date.getTime() >= timer.timeout) {
-          that._removeTimer(timer.id);
-        }
-      } else if (timer.type === 'runs') {
-        if (date.getTime() >= timer.timeout) {
-          timer.handler();
-          that._removeTimer(timer.id);
-        }
-      }
     };
   }
 
-  _getCurrentTimer() {
-    if (this.timers.length === 0) {
-      return {
-        'type' : ''
-      };
+  _getCurrentTask() {
+    if (this.tasks.length === 0) {
+      return null;
     }
-    return this.timers[0];
+    return this.tasks[0];
   }
 
-  _removeTimer(id) {
-    for (var i = 0; i < this.timers.length; i++) {
-      if (this.timers[i].id === id) {
-        this.timers.splice(i, 1);
+  _removeTask() {
+    this.tasks.splice(0, 1);
+  }
+  /*
+  _removeTask(id) {
+    for (var i = 0; i < this.tasks.length; i++) {
+      if (this.tasks[i].id === id) {
+        this.tasks.splice(i, 1);
         break;
       }
     }
   }
+  */
   setUp() {
   }
 
@@ -78,31 +48,19 @@ class TestCase {
   /**
    * 비동기 테스트 콜백함수를 추가한다.
    * 
-   * @param callback
-   *          Function 실행할 콜백 함수
-   * @param waitMicroSeconds
-   *          int 함수 대기시간. 밀리세켠드 단위
+   * @param callback Function 실행할 콜백 함수
    */
-  runs(callback, waitMicroSeconds = 0) {
-    this.timerID++;
+  runs(callback) {
     var that = this;
-    var id = that.timerID;
     var handler = function() {
       try {
         callback();
       } catch (error) {
         // console.log('catch error!:' + error.stack);
-        that._clearTimers();
         that._addFailedCount(error);
-        that._startTearDown();
       }
     };
-    this.timers.push({
-      'id' : this.timerID,
-      'type' : 'runs',
-      'handler' : handler,
-      'timeout' : new Date().getTime() + waitMicroSeconds
-    });
+    this.tasks.push(new Runs(handler));
   }
   /**
    * 비동기 테스트 콜백함수 실행을 대기시킨다.
@@ -112,17 +70,18 @@ class TestCase {
    * @waitMicroSeconds int 실행 대기 타임 아웃 시간. 밀리세컨드 단위
    */
   waitsFor(callback, timeoutMicroSeconds = 10000) {
-    this.timerID++;
     var that = this;
-    var id = that.timerID;
-    this.timers.push({
-      'id' : this.timerID,
+    //this.tasks.push(new Waits(timeoutMicroSeconds));
+    /*
+    this.tasks.push({
+      'started': false,
       'type' : 'waitsFor',
       'pass' : callback,
       'handler' : function() {
       },
-      'timeout' : new Date().getTime() + timeoutMicroSeconds
+      'timeout' : timeoutMicroSeconds
     });
+    */
   }
 
   /**
@@ -132,90 +91,49 @@ class TestCase {
    *          int 대기시간
    */
   waits(waitMicroSeconds) {
-    this.timerID++;
-    var that = this;
-    var id = that.timerID;
-    this.timers.push({
-      'id' : this.timerID,
-      'type' : 'waits',
-      'handler' : function() {
-      },
-      'timeout' : new Date().getTime() + waitMicroSeconds
-    });
+    this.tasks.push(new Waits(waitMicroSeconds));
   }
-
+  
+  *runAsync() {
+    process.addListener('uncaughtException', this.exceptionHandler);
+    // set up
+    this.testResult.test_started();
+    this.setUp();
+    this._RunMethod();
+    
+    for(var i = 0; i < this.tasks.length; i++) {
+      yield;
+      var task = this.tasks[i];
+      task.start();
+      while (task.isWait()) {
+        yield;
+      }
+      task.end();
+    }
+    
+    this.tearDown();
+    if (undefined !== this.runCompleteEvent) {
+      this.runCompleteEvent();
+    }
+    this.complete = true;
+  }
+  
   run(testResult, runCompleteEvent) {
     this.testResult = testResult;
     this.runCompleteEvent = runCompleteEvent;
-    this.updateIntervalID = setInterval(this.updateHandler, 1);
-
-    try {
-      process.addListener('uncaughtException', this.exceptionHandler);
-      // set up
-      testResult.test_started();
-      this._startSetUp();
-    } catch (error) {
-      this._clearTimers();
-      this._addFailedCount(error);
-      this._startTearDown();
-    }
+    var coroutine = this.runAsync();
+    setInterval(function() {
+      coroutine.next();
+    }, 1)
   }
 
-  _startSetUp() {
-    this.setUp();
-    var that = this;
-    this.stepIntervalID = setInterval(function() {
-      if (that.timers.length === 0) {
-        clearInterval(that.stepIntervalID);
-        that._startRun();
-      }
-    }, 1);
-  }
-
-  _startRun() {
+  _RunMethod() {
     try {
       // run test 시작
       eval('this.' + this.methodName + '();');
-      var that = this; // run test 시에 요청된 비동기 처리가 모두 완료되면 테스트 케이스 종료
-      this.stepIntervalID = setInterval(function() {
-        if (that.timers.length === 0) {
-          clearInterval(that.stepIntervalID);
-          that._startTearDown();
-        }
-      }, 1);
     } catch (error) {
-      this._clearTimers();
-      this._addFailedCount(error);
-      this._startTearDown();
-    }
-  }
-
-  _startTearDown() {
-    try {
-      // tear down 처리 시작. tearDown중 예외는 잡아서 처리해야지 계속 _startTearDown호출 되는 것을 막을 수
-      // 있다.
-      this.tearDown();
-    } catch (error) {
-      this._clearTimers();
       this._addFailedCount(error);
     }
-    // 테스트케이스 완료 처리 시작
-    var that = this;
-    this.stepIntervalID = setInterval(function() {
-      if (that.timers.length === 0) {
-        clearInterval(that.stepIntervalID);
-        clearInterval(that.updateIntervalID);
-        that.complete = true;
-        if (undefined !== that.runCompleteEvent) {
-          try {
-            that.runCompleteEvent();
-          } catch (error) {
-            console.error('TestCase::_startTearDown::complete event is failed:' + error.stack);
-          }
-        }
-        process.removeListener('uncaughtException', that.exceptionHandler);
-      }
-    }, 1);
   }
 
   _addFailedCount(error) {
@@ -223,19 +141,15 @@ class TestCase {
     this.testResult.test_failed(this.methodName, message);
   }
 
-  _clearTimers() {
-    clearInterval(this.stepIntervalID);
-    this.timers.length = 0;
-  }
 
   isComplete() {
     return this.complete;
   }
 
-  printTimers(message) {
+  printTasks(message) {
     console.log(message);
-    for (var i = 0; i < this.timers.length; i++) {
-      console.log('idx:' + i + ',id:' + this.timers[i].id + ',type:' + this.timers[i].type);
+    for (var i = 0; i < this.tasks.length; i++) {
+      console.log('idx:' + i + ',id:' + this.tasks[i].id + ',type:' + this.tasks[i].type);
     }
   }
 

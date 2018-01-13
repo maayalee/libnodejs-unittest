@@ -10,21 +10,21 @@ class TestRunnerTest extends TestCase {
     super(method_name);
   }
 
-  test_run() {
+  testRun() {
     var runner = new TestRunner();
     runner.add(WasRun.createSuite());
     runner.run();
-    this.waitsFor(function() {
+    this._waitsFor(function() {
       return runner.isComplete();
     });
-    this.runs(function() {
+    this._runs(function() {
       assert(runner.shortSummary() === 'WasRun: 3 run 1 failed\ntestBrokenMethod\n');
     });
   };
 
   static createSuite() {
     var suite = new TestSuite('TestRunnerTest');
-    suite.add(new TestRunnerTest('test_run'));
+    suite.add(new TestRunnerTest('testRun'));
     return suite;
   };
 }

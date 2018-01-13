@@ -27,7 +27,7 @@ class WasRun extends TestCase {
   testAsyncBrokenMethod() {
     this.log += 'testAsyncBrokenMethod ';
     var that = this;
-    this.runs(function() {
+    this._runs(function() {
       that.log += 'exception ';
       throw new Error('test async exception');
     });

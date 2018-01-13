@@ -7,34 +7,35 @@ var WaitsFor = require('./WaitsFor');
 
 class TestCase {
   constructor(methodName) {
-    this.methodName = methodName;
-    this.complete = false;
-    this.tasks = [];
-    this.runCompleteEvent = null;
-    this.testResult = null;
+    this._methodName = methodName;
+    this._complete = false;
+    this._tasks = [];
+    this._runCompleteEvent = null;
+    this._testResult = null;
+    this._updateTimer = null;
   }
 
   _getCurrentTask() {
-    if (this.tasks.length === 0) {
+    if (this._tasks.length === 0) {
       return null;
     }
-    return this.tasks[0];
+    return this._tasks[0];
   }
 
   _removeTask() {
-    this.tasks.splice(0, 1);
+    this._tasks.splice(0, 1);
   }
 
   /**
    * 테스트케이스를 실행전 호출되는 메서드. 이메서드에서 발생하는 예외는 실패가 아닌 에러로 간주한다
    */
-  setUp() {
+  _setUp() {
   }
   
   /**
    * 테스트케이스를 실행후 호출되는 메서드. 이메서드에서 발생하는 예외는 실패가 아닌 에러로 간주한다
    */
-  tearDown() {
+  _tearDown() {
   }
 
   /**
@@ -42,8 +43,8 @@ class TestCase {
    * 
    * @param callback Function 실행할 콜백 함수
    */
-  runs(callback) {
-    this.tasks.push(new Runs(callback));
+  _runs(callback) {
+    this._tasks.push(new Runs(callback));
   }
   /**
    * 비동기 테스트 콜백함수 실행을 대기시킨다.
@@ -52,8 +53,8 @@ class TestCase {
    *           실행한다.
    * @waitMicroSeconds int 실행 대기 타임 아웃 시간. 밀리세컨드 단위
    */
-  waitsFor(callback, timeoutMicroSeconds = 10000) {
-    this.tasks.push(new WaitsFor(callback, timeoutMicroSeconds));
+  _waitsFor(callback, timeoutMicroSeconds = 10000) {
+    this._tasks.push(new WaitsFor(callback, timeoutMicroSeconds));
   }
 
   /**
@@ -61,65 +62,53 @@ class TestCase {
    * 
    * @param waitMicroSeconds int 대기시간
    */
-  waits(waitMicroSeconds) {
-    this.tasks.push(new Waits(waitMicroSeconds));
+  _waits(waitMicroSeconds) {
+    this._tasks.push(new Waits(waitMicroSeconds));
   }
 
-  *runAsync() {
-    this.testResult.testStarted();
+  *_runAsync() {
+    this._testResult.testStarted();
     
-    this.setUp();
+    this._setUp();
     try {
-      eval('this.' + this.methodName + '();');
-      for(var i = 0; i < this.tasks.length; i++) {
+      eval('this.' + this._methodName + '();');
+      for(var i = 0; i < this._tasks.length; i++) {
         yield;
-        this.tasks[i].prepare();
-        while (this.tasks[i].isWait()) {
+        this._tasks[i].prepare();
+        while (this._tasks[i].isWait()) {
           yield;
         }
-        this.tasks[i].run();
+        this._tasks[i].run();
       }
     }
     catch (error) {
       var message = util.format('%s \n%s', error.message, error.stack);
-      this.testResult.testFailed(this.methodName, message);
+      this._testResult.testFailed(this._methodName, message);
     }
-    this.tearDown();
+    this._tearDown();
     
-    this.runCompleteEvent();
-    this.complete = true;
-  }
-  
-  *_runSetup() {
-    this.setUp();
-    for(var i = 0; i < this.tasks.length; i++) {
-      yield;
-      var task = this.tasks[i];
-      task.start();
-      while (task.isWait()) {
-        yield;
-      }
-      task.end();
-    }
+    this._runCompleteEvent();
+    this._complete = true;
+    clearInterval(this._updateTimer);
   }
   
   run(testResult, runCompleteEvent = function(){}) {
-    this.testResult = testResult;
-    this.runCompleteEvent = runCompleteEvent;
-    var coroutine = this.runAsync();
-    setInterval(function() {
+    this._testResult = testResult;
+    this._runCompleteEvent = runCompleteEvent;
+    var coroutine = this._runAsync();
+    this._updateTimer = setInterval(function() {
       coroutine.next();
     }, 1)
   }
 
   isComplete() {
-    return this.complete;
+    return this._complete;
   }
 
   printTasks(message) {
     console.log(message);
-    for (var i = 0; i < this.tasks.length; i++) {
-      console.log('idx:' + i + ',id:' + this.tasks[i].id + ',type:' + this.tasks[i].type);
+    for (var i = 0; i < this._tasks.length; i++) {
+      console.dir(this._tasks[i]);
     }
   }
 

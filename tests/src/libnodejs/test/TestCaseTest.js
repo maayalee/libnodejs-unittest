@@ -14,10 +14,10 @@ class TestCaseTest extends TestCase {
   testMethod() {
     var wasRun = new WasRun('testMethod');
     wasRun.run(this.wasRunTestResult);
-    this.waitsFor(function() {
+    this._waitsFor(function() {
       return wasRun.isComplete();
     });
-    this.runs(function() {
+    this._runs(function() {
       assert(wasRun.log === 'setUp testMethod tearDown ');
     });
   }
@@ -25,11 +25,11 @@ class TestCaseTest extends TestCase {
   testBrokenMethod() {
     var wasRun = new WasRun('testBrokenMethod');
     wasRun.run(this.wasRunTestResult);
-    this.waitsFor(function() {
+    this._waitsFor(function() {
       return wasRun.isComplete();
     });
     var that = this;
-    this.runs(function() {
+    this._runs(function() {
       assert(that.wasRunTestResult.shortSummary() === 'WasRun: 1 run 1 failed\ntestBrokenMethod\n');
     });
   }
@@ -37,11 +37,11 @@ class TestCaseTest extends TestCase {
   testAsyncBrokenMethod() {
     var wasRun = new WasRun('testAsyncBrokenMethod');
     wasRun.run(this.wasRunTestResult);
-    this.waitsFor(function() {
+    this._waitsFor(function() {
       return wasRun.isComplete();
     });
     var that = this;
-    this.runs(function() {
+    this._runs(function() {
       assert(wasRun.log === 'setUp testAsyncBrokenMethod exception tearDown ');
       assert(that.wasRunTestResult.shortSummary() === 'WasRun: 1 run 1 failed\ntestAsyncBrokenMethod\n');
     });

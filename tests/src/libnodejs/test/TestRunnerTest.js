@@ -13,7 +13,7 @@ class TestRunnerTest extends TestCase {
   test_run() {
     var runner = new TestRunner();
     runner.add(WasRun.createSuite());
-    runner.run(()=>{});
+    runner.run();
     this.waitsFor(function() {
       return runner.isComplete();
     });

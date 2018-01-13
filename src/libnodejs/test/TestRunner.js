@@ -16,7 +16,7 @@ class TestRunner {
     this.suites.push(testSuite);
   }
 
-  run(completeEvent) {
+  run(completeEvent = function(){}) {
     assert(completeEvent !== undefined);
 
     this.completeEvent = completeEvent;

@@ -1,13 +1,13 @@
 /*jshint esnext: true */
 
 class AsyncTask {
-  start() {
+  prepare() {
   }
   
   isWait() {
   }
   
-  end() {
+  run() {
   }
   
 }

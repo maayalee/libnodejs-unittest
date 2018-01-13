@@ -9,11 +9,11 @@ class TestResult {
     this.failMethods = [];
   }
 
-  test_started() {
+  testStarted() {
     this.runCount++;
   }
 
-  test_failed(method_name, failed_message) {
+  testFailed(method_name, failed_message) {
     this.failCount++;
     this.failMethods.push({'name':method_name, 'message':failed_message});
   }

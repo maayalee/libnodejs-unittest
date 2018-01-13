@@ -7,7 +7,7 @@ class Waits extends AsyncTask {
     this.waitMicroSeconds = waitMicroSeconds;
   }
   
-  start() {
+  prepare() {
     this.completeTime = this._getCurrentTime() + this.waitMicroSeconds;
   }
   
@@ -18,7 +18,7 @@ class Waits extends AsyncTask {
       return false;
   }
   
-  end() {
+  run() {
   }  
   
   _getCurrentTime() {

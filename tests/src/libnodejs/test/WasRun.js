@@ -6,22 +6,10 @@ class WasRun extends TestCase {
   constructor(methodName) {
     super(methodName);
     this.log = '';
-    this.raiseExceptionWhenSetUp = false;
-    this.raiseAsyncExceptionWhenSetUp = false;
-    this.raiseExceptionWhenTearDown = false;
-    this.raiseAsyncExceptionWhenTearDown = false;
   }
 
   setUp() {
     this.log += 'setUp ';
-    if (this.raiseExceptionWhenSetUp) {
-      throw new Error("test exception");
-    }
-    if (this.raiseAsyncExceptionWhenSetUp) {
-      this.runs(function() {
-        throw new Error('test async exception');
-      });
-    }
   }
 
   testMethod() {
@@ -30,14 +18,6 @@ class WasRun extends TestCase {
 
   tearDown() {
     this.log += 'tearDown ';
-    if (this.raiseExceptionWhenTearDown) {
-      throw new Error('test exception');
-    }
-    if (this.raiseAsyncExceptionWhenTearDown) {
-      this.runs(function() {
-        throw new Error('test async exception');
-      });
-    }
   }
 
   testBrokenMethod() {

@@ -8,6 +8,7 @@ class TestSuite {
     this._testCases = [];
     this._testResult = null;
     this._updateTimer = null;
+    this._complete = false;
   }
 
   add(test_case) {
@@ -29,15 +30,11 @@ class TestSuite {
         yield;
     }
     clearInterval(this._updateTimer);
+    this._complete = true;
   }
 
   isComplete() {
-    for (var i = 0; i < this._testCases.length; i++) {
-      if (!this._testCases[i].isComplete()) {
-        return false;
-      }
-    }
-    return true;
+    return this._complete;
   }
 
   summary() {

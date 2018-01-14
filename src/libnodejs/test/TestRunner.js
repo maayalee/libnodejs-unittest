@@ -8,6 +8,7 @@ class TestRunner {
     this._shortResult = '';
     this._updateTimer = null;
     this._completeEvent = null;
+    this._complete = false;
   }
 
   add(testSuite) {
@@ -31,17 +32,12 @@ class TestRunner {
       this._shortResult += this._suites[i].shortSummary();
     }
     this._completeEvent();
+    this._complete = true;
     clearInterval(this._updateTimer);
   }
 
   isComplete() {
-    var count = 0;
-    for (var i = 0; i < this._suites.length; ++i) {
-      if (this._suites[i].isComplete()) {
-        count++;
-      }
-    }
-    return count === this._suites.length;
+    return this._complete;
   }
 
   summary() {

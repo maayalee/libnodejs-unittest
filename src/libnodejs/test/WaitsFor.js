@@ -14,10 +14,10 @@ class WaitsFor extends AsyncTask {
   
   isWait() {
     if (this._timeoutTime > this._getCurrentTime()) {
-      return false;
+      return this._waitCallback();
     }
     else {
-      return this._waitCallback();
+      return false;
     }
   }
   

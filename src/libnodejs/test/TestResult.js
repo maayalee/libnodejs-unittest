@@ -19,13 +19,11 @@ class TestResult {
   }
 
   summary() {
-    return this._suiteName + ': ' + this._runCount + ' run ' + this._failCount + ' failed' + '\n' +
-    this.getFailedMessages();
+    return this._suiteName + ': ' + this._runCount + ' run ' + this._failCount + ' failed' + '\n' + this.getFailedMessages();
   }
 
   shortSummary() {
-    return this._suiteName + ': ' + this._runCount + ' run ' + this._failCount + ' failed' + '\n' +
-    this.getShortFailedMethods();
+    return this._suiteName + ': ' + this._runCount + ' run ' + this._failCount + ' failed' + '\n' + this.getShortFailedMethods();
   }
 
   getFailedMessages() {

@@ -15,18 +15,18 @@ class TestRunnerTest extends TestCase {
     runner.add(WasRun.createSuite());
     runner.run();
     this._waitsFor(function() {
-      return runner.isComplete();
-    });
+      return !runner.isComplete();
+    }, 1000);
     this._runs(function() {
       assert(runner.shortSummary() === 'WasRun: 3 run 1 failed\ntestBrokenMethod\n');
     });
-  };
+  }
 
   static createSuite() {
     var suite = new TestSuite('TestRunnerTest');
     suite.add(new TestRunnerTest('testRun'));
     return suite;
-  };
+  }
 }
 
 module.exports = TestRunnerTest;

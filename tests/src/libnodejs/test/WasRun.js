@@ -8,16 +8,16 @@ class WasRun extends TestCase {
     this.log = '';
   }
 
-  setUp() {
+  _setUp() {
     this.log += 'setUp ';
+  }
+  
+  _tearDown() {
+    this.log += 'tearDown ';
   }
 
   testMethod() {
     this.log += 'testMethod ';
-  }
-
-  tearDown() {
-    this.log += 'tearDown ';
   }
 
   testBrokenMethod() {

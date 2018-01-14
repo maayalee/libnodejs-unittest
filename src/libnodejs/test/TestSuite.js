@@ -3,49 +3,37 @@ var TestResult = require('./TestResult');
 
 class TestSuite {
   constructor(suiteName) {
-    this.suiteName = suiteName;
-    this.log = '';
-    this.testCases = [];
-    this.testResult = null;
-    this.currentTestCaseCount = 0;
-    this.currentTestCase = null;
-    this.interval = null;
+    this._suiteName = suiteName;
+    this._log = '';
+    this._testCases = [];
+    this._testResult = null;
+    this._updateTimer = null;
   }
 
   add(test_case) {
-    this.testCases.push(test_case);
+    this._testCases.push(test_case);
   }
 
   run() {
-    this.testResult = new TestResult(this.suiteName);
-
-    if (this.testCases.length > 0) {
-      this.currentTestCaseCount = 0;
-      this.currentTestCase = this.testCases[this.currentTestCaseCount];
-      this.currentTestCase.run(this.testResult);
-      var that = this;
-      this.interval = setInterval(function() {
-        that._update();
-      }, 1);
-    }
+    var coroutine = this._runAsync();
+    this._updateTimer = setInterval(function() {
+      coroutine.next();
+    }, 1);
   }
-
-  _update() {
-    if (this.currentTestCase.isComplete()) {
-      this.currentTestCaseCount++;
-      if (this.currentTestCaseCount === this.testCases.length) {
-        clearInterval(this.interval);
-      }
-      else {
-        this.currentTestCase = this.testCases[this.currentTestCaseCount];
-        this.currentTestCase.run(this.testResult);
-      }
+  
+  *_runAsync() {
+    this._testResult = new TestResult(this._suiteName);
+    for (var i = 0; i < this._testCases.length; ++i) {
+      this._testCases[i].run(this._testResult);
+      while (!this._testCases[i].isComplete())
+        yield;
     }
+    clearInterval(this._updateTimer);
   }
 
   isComplete() {
-    for (var i = 0; i < this.testCases.length; i++) {
-      if (!this.testCases[i].isComplete()) {
+    for (var i = 0; i < this._testCases.length; i++) {
+      if (!this._testCases[i].isComplete()) {
         return false;
       }
     }
@@ -53,15 +41,15 @@ class TestSuite {
   }
 
   summary() {
-    return this.testResult.summary();
+    return this._testResult.summary();
   }
 
   shortSummary() {
-    return this.testResult.shortSummary();
+    return this._testResult.shortSummary();
   }
 
   log() {
-    return this.log;
+    return this._log;
   }
 }
 

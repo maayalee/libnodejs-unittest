@@ -4,20 +4,20 @@ var AsyncTask = require('./AsyncTask');
 class WaitsFor extends AsyncTask {
   constructor(waitCallback, timeoutMicroSeconds) {
     super();
-    this.waitCallback = waitCallback;
-    this.timeoutMicroSeconds = timeoutMicroSeconds;
+    this._waitCallback = waitCallback;
+    this._timeoutMicroSeconds = timeoutMicroSeconds;
   }
   
   prepare() {
-    this.timeoutTime = this._getCurrentTime() + this.timeoutMicroSeconds;
+    this._timeoutTime = this._getCurrentTime() + this._timeoutMicroSeconds;
   }
   
   isWait() {
-    if (this.timeoutTime > this._getCurrentTime()) {
+    if (this._timeoutTime > this._getCurrentTime()) {
       return false;
     }
     else {
-      return this.waitCallback();
+      return this._waitCallback();
     }
   }
   

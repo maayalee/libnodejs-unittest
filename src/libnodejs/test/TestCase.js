@@ -14,6 +14,27 @@ class TestCase {
     this._testResult = null;
     this._updateTimer = null;
   }
+  
+  run(testResult, runCompleteEvent = function(){}) {
+    this._testResult = testResult;
+    this._runCompleteEvent = runCompleteEvent;
+    var coroutine = this._runAsync();
+    this._updateTimer = setInterval(function() {
+      coroutine.next();
+    }, 1)
+  }
+
+  isComplete() {
+    return this._complete;
+  }
+
+  printTasks(message) {
+    console.log(message);
+    for (var i = 0; i < this._tasks.length; i++) {
+      console.dir(this._tasks[i]);
+    }
+  }
+
 
   _getCurrentTask() {
     if (this._tasks.length === 0) {
@@ -90,28 +111,7 @@ class TestCase {
     this._runCompleteEvent();
     this._complete = true;
     clearInterval(this._updateTimer);
-  }
-  
-  run(testResult, runCompleteEvent = function(){}) {
-    this._testResult = testResult;
-    this._runCompleteEvent = runCompleteEvent;
-    var coroutine = this._runAsync();
-    this._updateTimer = setInterval(function() {
-      coroutine.next();
-    }, 1)
-  }
-
-  isComplete() {
-    return this._complete;
-  }
-
-  printTasks(message) {
-    console.log(message);
-    for (var i = 0; i < this._tasks.length; i++) {
-      console.dir(this._tasks[i]);
-    }
-  }
-
+  } 
 }
 
 module.exports = TestCase;

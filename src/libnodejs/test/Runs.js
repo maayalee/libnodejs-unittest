@@ -4,7 +4,7 @@ var AsyncTask = require('./AsyncTask');
 class Runs extends AsyncTask {
   constructor(callback) {
     super();
-    this.callback = callback;
+    this._callback = callback;
   }
   
   start() {
@@ -15,7 +15,7 @@ class Runs extends AsyncTask {
   }
   
   end() {
-    this.callback();
+    this._callback();
   }  
 }
 

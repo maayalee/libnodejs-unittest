@@ -3,34 +3,34 @@ var util = require('util');
 
 class TestResult {
   constructor(suiteName) {
-    this.suiteName = suiteName;
-    this.runCount = 0;
-    this.failCount = 0;
-    this.failMethods = [];
+    this._suiteName = suiteName;
+    this._runCount = 0;
+    this._failCount = 0;
+    this._failMethods = [];
   }
 
   testStarted() {
-    this.runCount++;
+    this._runCount++;
   }
 
   testFailed(method_name, failed_message) {
-    this.failCount++;
-    this.failMethods.push({'name':method_name, 'message':failed_message});
+    this._failCount++;
+    this._failMethods.push({'name':method_name, 'message':failed_message});
   }
 
   summary() {
-    return this.suiteName + ': ' + this.runCount + ' run ' + this.failCount + ' failed' + '\n' +
+    return this._suiteName + ': ' + this._runCount + ' run ' + this._failCount + ' failed' + '\n' +
     this.getFailedMessages();
   }
 
   shortSummary() {
-    return this.suiteName + ': ' + this.runCount + ' run ' + this.failCount + ' failed' + '\n' +
+    return this._suiteName + ': ' + this._runCount + ' run ' + this._failCount + ' failed' + '\n' +
     this.getShortFailedMethods();
   }
 
   getFailedMessages() {
     var result = '';
-    this.failMethods.forEach(function(value) {
+    this._failMethods.forEach(function(value) {
       var message = util.format('> Method: %s\n%s\n', value.name, value.message);
       result += message;
     });
@@ -39,7 +39,7 @@ class TestResult {
 
   getShortFailedMethods() {
     var result = '';
-    this.failMethods.forEach(function(value) {
+    this._failMethods.forEach(function(value) {
       var message = util.format('%s\n', value.name);
       result += message;
     });

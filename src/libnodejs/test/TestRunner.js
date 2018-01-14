@@ -3,70 +3,53 @@ var assert = require('assert');
 
 class TestRunner {
   constructor() {
-    this.suites = [];
-    this.result = '';
-    this.shortResult = '';
-    this.interval = null;
-    this.completeEvent = null;
-    this.currentSuite = null;
-    this.currentSuiteCount = 0;
+    this._suites = [];
+    this._result = '';
+    this._shortResult = '';
+    this._updateTimer = null;
+    this._completeEvent = null;
   }
 
   add(testSuite) {
-    this.suites.push(testSuite);
+    this._suites.push(testSuite);
   }
 
   run(completeEvent = function(){}) {
-    assert(completeEvent !== undefined);
-
-    this.completeEvent = completeEvent;
-    if (this.suites.length > 0) {
-      this.currentSuiteCount = 0;
-      this.currentSuite = this.suites[this.currentSuiteCount];
-      this.currentSuite.run();
-
-      var that = this;
-      this.interval = setInterval(function() {
-        that._update();
-      }, 1);
-    }
-    else {
-      this.completeEvent();
-    }
+    this._completeEvent = completeEvent;
+    var coroutine = this._runAsync();
+    this._updateTimer = setInterval(function() {
+      coroutine.next();
+    }, 1);
   }
-
-  _update() { 
-    if (this.currentSuite.isComplete()) {
-      this.result += this.currentSuite.summary();
-      this.shortResult += this.currentSuite.shortSummary();
-      this.currentSuiteCount++;
-      if (this.currentSuiteCount === this.suites.length) {
-        clearInterval(this.interval);
-        this.completeEvent();
-      }
-      else {
-        this.currentSuite = this.suites[this.currentSuiteCount];
-        this.currentSuite.run();
-      }
+  
+  *_runAsync() {
+    for (var i = 0; i < this._suites.length; ++i) {
+      this._suites[i].run();
+      while (!this._suites[i].isComplete())
+        yield;
+      this._result += this._suites[i].summary();
+      this._shortResult += this._suites[i].shortSummary();
     }
+    this._completeEvent();
+    clearInterval(this._updateTimer);
   }
 
   isComplete() {
     var count = 0;
-    for (var i = 0; i < this.suites.length; ++i) {
-      if (this.suites[i].isComplete()) {
+    for (var i = 0; i < this._suites.length; ++i) {
+      if (this._suites[i].isComplete()) {
         count++;
       }
     }
-    return count === this.suites.length;
+    return count === this._suites.length;
   }
 
   summary() {
-    return this.result;
+    return this._result;
   }
 
   shortSummary() {
-    return this.shortResult;
+    return this._shortResult;
   }
 }
 

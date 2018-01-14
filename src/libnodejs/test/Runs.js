@@ -14,7 +14,7 @@ class Runs extends AsyncTask {
     return false;
   }
   
-  end() {
+  run() {
     this._callback();
   }  
 }
